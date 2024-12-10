@@ -11,7 +11,13 @@ function Board(): JSX.Element {
       {cells.map((row, i) => (
         <div key={i} css={rowStyle}>
           {row.map((cell, j) => (
-            <Cell key={j} isSelected={cell.isSelected} value={cell.value} />
+            <Cell
+              key={j}
+              isSelected={cell.isSelected}
+              value={cell.value}
+              row={i}
+              col={j}
+            />
           ))}
         </div>
       ))}

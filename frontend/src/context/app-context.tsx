@@ -16,11 +16,17 @@ type AppStateType = {
   setHeight: (height: number) => void;
   setWidth: (width: number) => void;
   setValue: (row: number, col: number, value: number) => void;
-  toggleSelected: (row: number, col: number) => void;
+  setSelected: (row: number, col: number, isSelected: boolean) => void;
+  isSelecting: boolean;
+  setIsSelecting: (isSelecting: boolean) => void;
+  isDeselecting: boolean;
+  setIsDeselecting: (isDeselecting: boolean) => void;
 };
 
 const useAppStates = (): AppStateType => {
   const [cells, setCells] = useState<CellState[][]>([[{ isSelected: false }]]);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [isDeselecting, setIsDeselecting] = useState(false);
 
   const setHeight = useCallback((height: number) => {
     if (height < 1) {
@@ -72,21 +78,34 @@ const useAppStates = (): AppStateType => {
     });
   }, []);
 
-  const toggleSelected = useCallback((row: number, col: number) => {
-    setCells((prev) => {
-      const newCells = prev.map((r, i) => {
-        return r.map((c, j) => {
-          if (i === row && j === col) {
-            return { ...c, isSelected: !c.isSelected };
-          }
-          return c;
+  const setSelected = useCallback(
+    (row: number, col: number, isSelected: boolean) => {
+      setCells((prev) => {
+        const newCells = prev.map((r, i) => {
+          return r.map((c, j) => {
+            if (i === row && j === col) {
+              return { ...c, isSelected: isSelected };
+            }
+            return c;
+          });
         });
+        return newCells;
       });
-      return newCells;
-    });
-  }, []);
+    },
+    []
+  );
 
-  return { cells, setHeight, setWidth, setValue, toggleSelected };
+  return {
+    cells,
+    setHeight,
+    setWidth,
+    setValue,
+    setSelected,
+    isSelecting,
+    setIsSelecting,
+    isDeselecting,
+    setIsDeselecting,
+  };
 };
 
 const AppContext = createContext<AppStateType | null>(null);

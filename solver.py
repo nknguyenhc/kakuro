@@ -10,6 +10,7 @@ class Sentence:
         self.is_col = is_col
         self.start = start
         self.end = end
+        self.filled_values = set()
         self.possible_combinations = self._find_possible_combinations(sum, end - start + 1, 0)
     
     def _find_possible_combinations(self, sum: int, count: int, floor: int) -> list[set[int]]:
@@ -30,17 +31,21 @@ class Sentence:
     
     def place(self, integer: int) -> list[set[int]]:
         """Place the number, returning all combinations that are removed from this sentence."""
+        assert integer not in self.filled_values
         possible_combinations = list(filter(lambda combination: integer in combination, self.possible_combinations))
         if len(possible_combinations) == 0:
             raise UnsatifiableError(
                 f"No possible combinations left for sentence, {self}")
         removed_combinations = list(filter(lambda combination: integer not in combination, self.possible_combinations))
         self.possible_combinations = possible_combinations
+        self.filled_values.add(integer)
         return removed_combinations
     
-    def add_back(self, combinations: list[set[int]]):
-        """Add back the combinations that were removed."""
+    def add_back(self, combinations: list[set[int]], removed_integer: int):
+        """Add back the combinations that were removed, removing the integer from the filled values."""
+        assert removed_integer in self.filled_values
         self.possible_combinations += combinations
+        self.filled_values.remove(removed_integer)
     
     def __repr__(self):
         return f"Sentence({self.sum=}, {self.is_col=}, {self.start=}, {self.end=}, {self.possible_combinations=})"
@@ -51,14 +56,11 @@ class Sentence:
 
 class Cell:
     def __init__(self, row: int, col: int,
-                 row_sentence: Sentence, col_sentence: Sentence,
-                 row_values: set[int], col_values: set[int]):
+                 row_sentence: Sentence, col_sentence: Sentence):
         self.row = row
         self.col = col
         self.row_sentence = row_sentence
         self.col_sentence = col_sentence
-        self.row_values = row_values
-        self.col_values = col_values
         self.value: int | None = None
         self.possible_values = set()
         self.calculate_possible_values()
@@ -73,8 +75,8 @@ class Cell:
             return None
         previous_count = len(self.possible_values)
         possible_values = {i for i in range(1, 10) 
-            if i not in self.row_values
-            and i not in self.col_values
+            if i not in self.row_sentence.filled_values
+            and i not in self.col_sentence.filled_values
             and any(i in col_comb for col_comb in self.col_sentence.possible_combinations) 
             and any(i in row_comb for row_comb in self.row_sentence.possible_combinations)}
         if len(possible_values) == 0:
@@ -88,8 +90,6 @@ class Cell:
         assert self.value is None and integer in self.possible_values
         assert self.removed_row_combinations is None and self.removed_col_combinations is None
         self.value = integer
-        self.row_values.add(integer)
-        self.col_values.add(integer)
         self.removed_row_combinations = self.row_sentence.place(integer)
         self.removed_col_combinations = self.col_sentence.place(integer)
     
@@ -97,11 +97,9 @@ class Cell:
         """Undo the placement of the number."""
         assert self.value is not None
         assert self.removed_row_combinations is not None and self.removed_col_combinations is not None
-        self.row_values.remove(self.value)
-        self.col_values.remove(self.value)
+        self.row_sentence.add_back(self.removed_row_combinations, self.value)
+        self.col_sentence.add_back(self.removed_col_combinations, self.value)
         self.value = None
-        self.row_sentence.add_back(self.removed_row_combinations)
-        self.col_sentence.add_back(self.removed_col_combinations)
         self.removed_row_combinations = None
         self.removed_col_combinations = None
     
@@ -120,18 +118,14 @@ class Board:
         self.cols = len(board[0])
         self.unsolved_count = 0
         self.cell_map: dict[int, set[tuple[int, int]]] = dict()
-        self.row_values = [set() for _ in range(self.rows)]
-        self.col_values = [set() for _ in range(self.cols)]
         self.board = [list(map(
             lambda cell: self._create_cell(row_sentences, col_sentences,
-                                           i, cell[0],
-                                           self.row_values[i], self.col_values[cell[0]]) if cell[1] else None,
+                                           i, cell[0]) if cell[1] else None,
             enumerate(row)
         )) for i, row in enumerate(board)]
     
     def _create_cell(self, row_sentences: dict[int, list[Sentence]], col_sentences: dict[int, list[Sentence]],
-                     row: int, col: int,
-                     row_values: set[int], col_values: set[int]) -> Cell:
+                     row: int, col: int) -> Cell:
         row_sentence = None
         col_sentence = None
         for test_row_sentence in row_sentences[row]:
@@ -144,7 +138,7 @@ class Board:
                 break
         
         assert row_sentence is not None and col_sentence is not None
-        cell = Cell(row, col, row_sentence, col_sentence, row_values, col_values)
+        cell = Cell(row, col, row_sentence, col_sentence)
 
         count = len(cell.possible_values)
         if count not in self.cell_map:

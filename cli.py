@@ -46,7 +46,7 @@ def _get_row_sentences(board: list[list[bool]], row_count: int, col_count: int) 
             if start >= row_count:
                 break
 
-            end: int = 0
+            end: int = start
             while end < row_count:
                 if not board[i][end]:
                     break
@@ -77,7 +77,7 @@ def _get_col_sentences(board: list[list[bool]], row_count: int, col_count: int) 
             if start >= col_count:
                 break
 
-            end: int = 0
+            end: int = start
             while end < col_count:
                 if not board[end][i]:
                     break

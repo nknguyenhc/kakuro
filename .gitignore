@@ -1,3 +1,7 @@
+# Frontend
+frontend/node_modules
+frontend/package-lock.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

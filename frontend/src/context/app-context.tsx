@@ -5,6 +5,7 @@ import {
   SetStateAction,
   useCallback,
   useContext,
+  useMemo,
   useState,
 } from 'react';
 import { BACKEND_URL } from '../constants/urls';
@@ -27,7 +28,6 @@ type AppStateType = {
   cells: CellState[][];
   setHeight: (height: number) => void;
   setWidth: (width: number) => void;
-  setValue: (row: number, col: number, value: number) => void;
   setSelected: (row: number, col: number, isSelected: boolean) => void;
   isSelecting: boolean;
   setIsSelecting: (isSelecting: boolean) => void;
@@ -37,6 +37,11 @@ type AppStateType = {
   setRowSentences: Dispatch<SetStateAction<ConstraintType[][]>>;
   colSentences: ConstraintType[][];
   setColSentences: Dispatch<SetStateAction<ConstraintType[][]>>;
+  nextSolutionStep: () => void;
+  previousSolutionStep: () => void;
+  firstSolutionStep: () => void;
+  lastSolutionStep: () => void;
+  hasSolution: boolean;
 };
 
 const useAppStates = (): AppStateType => {
@@ -46,6 +51,9 @@ const useAppStates = (): AppStateType => {
   const [isDeselecting, setIsDeselecting] = useState(false);
   const [rowSentences, setRowSentences] = useState<ConstraintType[][]>([]);
   const [colSentences, setColSentences] = useState<ConstraintType[][]>([]);
+  const [solutionSteps, setSolutionSteps] = useState<CellState[][][]>([]);
+  const [solutionStepIndex, setSolutionStepIndex] = useState(0);
+  const hasSolution = useMemo(() => solutionSteps.length > 0, [solutionSteps]);
 
   const setHeight = useCallback((height: number) => {
     if (height < 1) {
@@ -75,23 +83,6 @@ const useAppStates = (): AppStateType => {
           newRow[i] = row[i];
         }
         return newRow;
-      });
-      return newCells;
-    });
-  }, []);
-
-  const setValue = useCallback((row: number, col: number, value: number) => {
-    setCells((prev) => {
-      const newCells = prev.map((r, i) => {
-        if (i === row) {
-          return r.map((c, j) => {
-            if (j === col) {
-              return { value, isSelected: false };
-            }
-            return c;
-          });
-        }
-        return r;
       });
       return newCells;
     });
@@ -191,7 +182,26 @@ const useAppStates = (): AppStateType => {
       }),
     })
       .then((res) => res.json())
-      .then((res) => console.log(res));
+      .then((res) => {
+        if (!res.success) {
+          alert(res.error);
+          return;
+        }
+        if (res.steps.length === 0) {
+          alert('Something went wrong, no solution step found');
+          return;
+        }
+        const solutionSteps = res.steps.map((step: string[][]) =>
+          step.map((row: string[]) =>
+            row.map((cell) => ({
+              isSelected: cell !== 'X',
+              value: isNaN(parseInt(cell)) ? undefined : parseInt(cell),
+            }))
+          )
+        );
+        setSolutionSteps(solutionSteps);
+        setCells(solutionSteps[0]);
+      });
   }, [cells, rowSentences, colSentences]);
 
   const incrementStep = useCallback(() => {
@@ -203,10 +213,38 @@ const useAppStates = (): AppStateType => {
     setStep((prev) => (prev < 3 ? prev + 1 : prev));
   }, [step, calculateConstraints, getSolution]);
 
-  const decrementStep = useCallback(
-    () => setStep((prev) => (prev > 1 ? prev - 1 : prev)),
-    []
-  );
+  const decrementStep = useCallback(() => {
+    setStep((prev) => (prev > 1 ? prev - 1 : prev));
+    setCells((prev) =>
+      prev.map((row) => row.map((cell) => ({ ...cell, value: undefined })))
+    );
+  }, []);
+
+  const nextSolutionStep = useCallback(() => {
+    if (solutionStepIndex + 1 >= solutionSteps.length) {
+      return;
+    }
+    setSolutionStepIndex(solutionStepIndex + 1);
+    setCells(solutionSteps[solutionStepIndex + 1]);
+  }, [solutionStepIndex, solutionSteps]);
+
+  const previousSolutionStep = useCallback(() => {
+    if (solutionStepIndex - 1 < 0) {
+      return;
+    }
+    setSolutionStepIndex(solutionStepIndex - 1);
+    setCells(solutionSteps[solutionStepIndex - 1]);
+  }, [solutionStepIndex, solutionSteps]);
+
+  const firstSolutionStep = useCallback(() => {
+    setSolutionStepIndex(0);
+    setCells(solutionSteps[0]);
+  }, [solutionSteps]);
+
+  const lastSolutionStep = useCallback(() => {
+    setSolutionStepIndex(solutionSteps.length - 1);
+    setCells(solutionSteps[solutionSteps.length - 1]);
+  }, [solutionSteps]);
 
   return {
     step,
@@ -215,7 +253,6 @@ const useAppStates = (): AppStateType => {
     cells,
     setHeight,
     setWidth,
-    setValue,
     setSelected,
     isSelecting,
     setIsSelecting,
@@ -225,6 +262,11 @@ const useAppStates = (): AppStateType => {
     setRowSentences,
     colSentences,
     setColSentences,
+    nextSolutionStep,
+    previousSolutionStep,
+    firstSolutionStep,
+    lastSolutionStep,
+    hasSolution,
   };
 };
 

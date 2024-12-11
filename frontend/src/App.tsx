@@ -1,12 +1,12 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import Board from './components/board/Board';
 import Controls from './components/controls/Controls';
+import BoardDisplay from './components/board/BoardDisplay';
 
 function App() {
   return (
     <div css={appStyle}>
-      <Board />
+      <BoardDisplay />
       <Controls />
     </div>
   );

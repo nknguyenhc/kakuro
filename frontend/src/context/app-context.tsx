@@ -41,6 +41,9 @@ type AppStateType = {
   previousSolutionStep: () => void;
   firstSolutionStep: () => void;
   lastSolutionStep: () => void;
+  solutionStepIndex: number;
+  maxStep: number;
+  jumpToStep: (stepIndex: number) => void;
   hasSolution: boolean;
 };
 
@@ -54,6 +57,7 @@ const useAppStates = (): AppStateType => {
   const [solutionSteps, setSolutionSteps] = useState<CellState[][][]>([]);
   const [solutionStepIndex, setSolutionStepIndex] = useState(0);
   const hasSolution = useMemo(() => solutionSteps.length > 0, [solutionSteps]);
+  const maxStep = useMemo(() => solutionSteps.length - 1, [solutionSteps]);
 
   const setHeight = useCallback((height: number) => {
     if (height < 1) {
@@ -261,6 +265,14 @@ const useAppStates = (): AppStateType => {
     setCells(solutionSteps[solutionSteps.length - 1]);
   }, [solutionSteps]);
 
+  const jumpToStep = useCallback(
+    (stepIndex: number) => {
+      setSolutionStepIndex(stepIndex);
+      setCells(solutionSteps[stepIndex]);
+    },
+    [solutionSteps]
+  );
+
   return {
     step,
     incrementStep,
@@ -281,6 +293,9 @@ const useAppStates = (): AppStateType => {
     previousSolutionStep,
     firstSolutionStep,
     lastSolutionStep,
+    solutionStepIndex,
+    maxStep,
+    jumpToStep,
     hasSolution,
   };
 };

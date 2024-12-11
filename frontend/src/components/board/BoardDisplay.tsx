@@ -11,11 +11,24 @@ function BoardDisplay() {
     previousSolutionStep,
     firstSolutionStep,
     lastSolutionStep,
+    solutionStepIndex,
+    maxStep,
+    jumpToStep,
   } = useAppContext();
 
   return (
     <div css={boardDisplayStyle}>
       <Board />
+      {step === 3 && hasSolution && (
+        <input
+          type="range"
+          min="1"
+          max={maxStep + 1}
+          value={solutionStepIndex + 1}
+          onChange={(e) => jumpToStep(parseInt(e.target.value) - 1)}
+          css={sliderStyle}
+        />
+      )}
       {step === 3 && hasSolution && (
         <div css={buttonsStyle}>
           <button onClick={firstSolutionStep}>First</button>
@@ -39,6 +52,10 @@ const buttonsStyle = css`
   display: flex;
   flex-direction: row;
   gap: 10px;
+`;
+
+const sliderStyle = css`
+  width: 70%;
 `;
 
 export default BoardDisplay;

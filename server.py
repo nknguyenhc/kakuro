@@ -88,7 +88,7 @@ def _solve(problem: Problem) -> Response:
     try:
         board = Board(problem.board, row_sentences, col_sentences)
     except UnsatifiableError as e:
-        return Response(success=False, error=str(e))
+        return Response(success=False, error="Board has no solution")
     
     boards: list[list[list[str]]] = []
     is_solved = board.solve(lambda board: boards.append(board))

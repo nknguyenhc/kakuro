@@ -204,20 +204,35 @@ const useAppStates = (): AppStateType => {
       });
   }, [cells, rowSentences, colSentences]);
 
+  const areAllSentencesIndicated = useCallback(
+    () =>
+      rowSentences.every((row) =>
+        row.every((cell) => cell.sum !== undefined)
+      ) &&
+      colSentences.every((col) => col.every((cell) => cell.sum !== undefined)),
+    [rowSentences, colSentences]
+  );
+
   const incrementStep = useCallback(() => {
     if (step === 1) {
       calculateConstraints();
     } else if (step === 2) {
+      if (!areAllSentencesIndicated()) {
+        alert('Please indicate the sum for all of the constraints');
+        return;
+      }
       getSolution();
     }
     setStep((prev) => (prev < 3 ? prev + 1 : prev));
-  }, [step, calculateConstraints, getSolution]);
+  }, [step, calculateConstraints, areAllSentencesIndicated, getSolution]);
 
   const decrementStep = useCallback(() => {
     setStep((prev) => (prev > 1 ? prev - 1 : prev));
     setCells((prev) =>
       prev.map((row) => row.map((cell) => ({ ...cell, value: undefined })))
     );
+    setSolutionSteps([]);
+    setSolutionStepIndex(0);
   }, []);
 
   const nextSolutionStep = useCallback(() => {

@@ -33,21 +33,21 @@ def _get_sentences(board: list[list[bool]],
 
 def _get_row_sentences(board: list[list[bool]], row_count: int, col_count: int) -> dict[int, list[Sentence]]:
     sentences: dict[int, list[Sentence]] = dict()
-    for i in range(col_count):
+    for i in range(row_count):
         sentences[i] = []
         start: int = 0
         end: int = 0
         
-        while start < row_count:
-            while start < row_count:
+        while start < col_count:
+            while start < col_count:
                 if board[i][start]:
                     break
                 start += 1
-            if start >= row_count:
+            if start >= col_count:
                 break
 
             end: int = start
-            while end < row_count:
+            while end < col_count:
                 if not board[i][end]:
                     break
                 end += 1
@@ -64,21 +64,21 @@ def _get_row_sentences(board: list[list[bool]], row_count: int, col_count: int) 
 
 def _get_col_sentences(board: list[list[bool]], row_count: int, col_count: int) -> dict[int, list[Sentence]]:
     sentences: dict[int, list[Sentence]] = dict()
-    for i in range(row_count):
+    for i in range(col_count):
         sentences[i] = []
         start: int = 0
         end: int = 0
         
-        while start < col_count:
-            while start < col_count:
+        while start < row_count:
+            while start < row_count:
                 if board[start][i]:
                     break
                 start += 1
-            if start >= col_count:
+            if start >= row_count:
                 break
 
             end: int = start
-            while end < col_count:
+            while end < row_count:
                 if not board[end][i]:
                     break
                 end += 1

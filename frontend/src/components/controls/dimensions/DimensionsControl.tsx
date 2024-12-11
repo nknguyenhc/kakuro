@@ -10,6 +10,7 @@ function DimensionsControl(): JSX.Element {
 
   return (
     <div css={dimensionsControlStyle}>
+      <div>Click on the cells to indicate those included in the puzzle.</div>
       <label>Height:</label>
       <input
         type="number"

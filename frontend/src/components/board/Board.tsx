@@ -29,6 +29,7 @@ const boardStyle = css`
   display: flex;
   flex-direction: column;
   gap: 0px;
+  padding: 80px;
 `;
 
 const rowStyle = css`

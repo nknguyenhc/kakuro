@@ -4,7 +4,7 @@ import { useAppContext } from '../../context/app-context';
 import StepControl from './step/StepControl';
 
 function Controls(): JSX.Element {
-  const { setIsSelecting, setIsDeselecting } = useAppContext();
+  const { step, setIsSelecting, setIsDeselecting } = useAppContext();
 
   useEffect(() => {
     const mouseUpHandler = () => {
@@ -20,7 +20,7 @@ function Controls(): JSX.Element {
   return (
     <div>
       <StepControl />
-      <DimensionsControl />
+      {step === 1 && <DimensionsControl />}
     </div>
   );
 }

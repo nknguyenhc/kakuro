@@ -1,6 +1,8 @@
 import {
   createContext,
+  Dispatch,
   PropsWithChildren,
+  SetStateAction,
   useCallback,
   useContext,
   useState,
@@ -9,6 +11,12 @@ import {
 type CellState = {
   value?: number;
   isSelected: boolean;
+};
+
+export type ConstraintType = {
+  start: number;
+  end: number;
+  sum?: number;
 };
 
 type AppStateType = {
@@ -24,6 +32,10 @@ type AppStateType = {
   setIsSelecting: (isSelecting: boolean) => void;
   isDeselecting: boolean;
   setIsDeselecting: (isDeselecting: boolean) => void;
+  rowSentences: ConstraintType[][];
+  setRowSentences: Dispatch<SetStateAction<ConstraintType[][]>>;
+  colSentences: ConstraintType[][];
+  setColSentences: Dispatch<SetStateAction<ConstraintType[][]>>;
 };
 
 const useAppStates = (): AppStateType => {
@@ -31,6 +43,8 @@ const useAppStates = (): AppStateType => {
   const [cells, setCells] = useState<CellState[][]>([[{ isSelected: false }]]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [isDeselecting, setIsDeselecting] = useState(false);
+  const [rowSentences, setRowSentences] = useState<ConstraintType[][]>([]);
+  const [colSentences, setColSentences] = useState<ConstraintType[][]>([]);
 
   const setHeight = useCallback((height: number) => {
     if (height < 1) {
@@ -99,10 +113,76 @@ const useAppStates = (): AppStateType => {
     []
   );
 
-  const incrementStep = useCallback(
-    () => setStep((prev) => (prev < 3 ? prev + 1 : prev)),
-    []
-  );
+  const calculateConstraints = useCallback(() => {
+    const rowSentences: ConstraintType[][] = [];
+    for (let i = 0; i < cells.length; i++) {
+      const row: ConstraintType[] = [];
+      let start: number = 0;
+      let end: number = 0;
+      while (start < cells[i].length) {
+        while (start < cells[i].length) {
+          if (cells[i][start].isSelected) {
+            break;
+          }
+          start++;
+        }
+        if (start === cells[i].length) {
+          break;
+        }
+
+        end = start;
+        while (end < cells[i].length) {
+          if (!cells[i][end].isSelected) {
+            break;
+          }
+          end++;
+        }
+        end--;
+        row.push({ start, end });
+        start = end + 1;
+      }
+      rowSentences.push(row);
+    }
+    setRowSentences(rowSentences);
+
+    const colSentences: ConstraintType[][] = [];
+    for (let i = 0; i < cells[0].length; i++) {
+      const col: ConstraintType[] = [];
+      let start: number = 0;
+      let end: number = 0;
+      while (start < cells.length) {
+        while (start < cells.length) {
+          if (cells[start][i].isSelected) {
+            break;
+          }
+          start++;
+        }
+        if (start === cells.length) {
+          break;
+        }
+
+        end = start;
+        while (end < cells.length) {
+          if (!cells[end][i].isSelected) {
+            break;
+          }
+          end++;
+        }
+        end--;
+        col.push({ start, end });
+        start = end + 1;
+      }
+      colSentences.push(col);
+    }
+    setColSentences(colSentences);
+  }, [cells]);
+
+  const incrementStep = useCallback(() => {
+    if (step === 1) {
+      calculateConstraints();
+    }
+    setStep((prev) => (prev < 3 ? prev + 1 : prev));
+  }, [step, calculateConstraints]);
 
   const decrementStep = useCallback(
     () => setStep((prev) => (prev > 1 ? prev - 1 : prev)),
@@ -122,6 +202,10 @@ const useAppStates = (): AppStateType => {
     setIsSelecting,
     isDeselecting,
     setIsDeselecting,
+    rowSentences,
+    setRowSentences,
+    colSentences,
+    setColSentences,
   };
 };
 

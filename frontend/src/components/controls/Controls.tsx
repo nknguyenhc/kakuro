@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import DimensionsControl from './dimensions/DimensionsControl';
 import { useAppContext } from '../../context/app-context';
+import StepControl from './step/StepControl';
 
 function Controls(): JSX.Element {
   const { setIsSelecting, setIsDeselecting } = useAppContext();
@@ -18,6 +19,7 @@ function Controls(): JSX.Element {
 
   return (
     <div>
+      <StepControl />
       <DimensionsControl />
     </div>
   );

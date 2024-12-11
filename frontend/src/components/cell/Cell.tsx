@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import { useAppContext } from '../../context/app-context';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 function Cell({
   isSelected,
@@ -15,6 +15,7 @@ function Cell({
   value?: number;
 }): JSX.Element {
   const {
+    step,
     isSelecting,
     setIsSelecting,
     isDeselecting,
@@ -22,29 +23,38 @@ function Cell({
     setSelected,
   } = useAppContext();
 
+  const editable = useMemo(() => step === 1, [step]);
+
   const mouseDownHandler = useCallback(() => {
+    if (!editable) {
+      return;
+    }
     if (isSelected) {
       setIsDeselecting(true);
     } else {
       setIsSelecting(true);
     }
     setSelected(row, col, !isSelected);
-  }, [setIsSelecting, setIsDeselecting, row, col, isSelected]);
+  }, [setIsSelecting, setIsDeselecting, row, col, isSelected, step]);
 
   const mouseEnterHandler = useCallback(() => {
+    if (!editable) {
+      return;
+    }
     if (isSelecting) {
       setSelected(row, col, true);
     }
     if (isDeselecting) {
       setSelected(row, col, false);
     }
-  }, [isSelecting, isDeselecting, setSelected, row, col]);
+  }, [isSelecting, isDeselecting, setSelected, row, col, editable]);
 
   return (
     <div
       onMouseDown={mouseDownHandler}
       onMouseEnter={mouseEnterHandler}
       css={cellStyle(isSelected)}
+      draggable={false}
     >
       {value !== undefined && value}
     </div>

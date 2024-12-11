@@ -41,6 +41,7 @@ const inputStyle = css`
   border: 1px solid #ccc;
   font-size: 1em;
   text-align: center;
+  max-width: 200px;
 `;
 
 export default DimensionsControl;

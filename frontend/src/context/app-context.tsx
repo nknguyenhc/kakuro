@@ -12,6 +12,9 @@ type CellState = {
 };
 
 type AppStateType = {
+  step: number;
+  incrementStep: () => void;
+  decrementStep: () => void;
   cells: CellState[][];
   setHeight: (height: number) => void;
   setWidth: (width: number) => void;
@@ -24,6 +27,7 @@ type AppStateType = {
 };
 
 const useAppStates = (): AppStateType => {
+  const [step, setStep] = useState(1);
   const [cells, setCells] = useState<CellState[][]>([[{ isSelected: false }]]);
   const [isSelecting, setIsSelecting] = useState(false);
   const [isDeselecting, setIsDeselecting] = useState(false);
@@ -95,7 +99,20 @@ const useAppStates = (): AppStateType => {
     []
   );
 
+  const incrementStep = useCallback(
+    () => setStep((prev) => (prev < 3 ? prev + 1 : prev)),
+    []
+  );
+
+  const decrementStep = useCallback(
+    () => setStep((prev) => (prev > 1 ? prev - 1 : prev)),
+    []
+  );
+
   return {
+    step,
+    incrementStep,
+    decrementStep,
     cells,
     setHeight,
     setWidth,

@@ -7,6 +7,7 @@ import {
   useContext,
   useState,
 } from 'react';
+import { BACKEND_URL } from '../constants/urls';
 
 type CellState = {
   value?: number;
@@ -177,12 +178,30 @@ const useAppStates = (): AppStateType => {
     setColSentences(colSentences);
   }, [cells]);
 
+  const getSolution = useCallback(() => {
+    fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        board: cells.map((row) => row.map((cell) => cell.isSelected)),
+        row_constraints: rowSentences,
+        col_constraints: colSentences,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => console.log(res));
+  }, [cells, rowSentences, colSentences]);
+
   const incrementStep = useCallback(() => {
     if (step === 1) {
       calculateConstraints();
+    } else if (step === 2) {
+      getSolution();
     }
     setStep((prev) => (prev < 3 ? prev + 1 : prev));
-  }, [step, calculateConstraints]);
+  }, [step, calculateConstraints, getSolution]);
 
   const decrementStep = useCallback(
     () => setStep((prev) => (prev > 1 ? prev - 1 : prev)),

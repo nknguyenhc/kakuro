@@ -1,10 +1,21 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from copy import deepcopy
+from dotenv import load_dotenv
+import os
 
 from models import Problem, Constraint, Response
 from solver import Sentence, Board, UnsatifiableError
 
+load_dotenv()
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_methods=["*"],
+    allow_origins=[os.environ.get("FRONTEND")],
+)
 
 @app.post("/solve")
 def solve(problem: Problem) -> Response:

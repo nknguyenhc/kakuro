@@ -74,7 +74,7 @@ function Cell({
           i === row
             ? rowSentences.map((sentence, j) =>
                 j === rowConstraintIndex
-                  ? { ...sentence, value: Number(e.target.value) }
+                  ? { ...sentence, sum: Number(e.target.value) }
                   : sentence
               )
             : rowSentences
@@ -90,7 +90,7 @@ function Cell({
           i === col
             ? colSentences.map((sentence, j) =>
                 j === colConstraintIndex
-                  ? { ...sentence, value: Number(e.target.value) }
+                  ? { ...sentence, sum: Number(e.target.value) }
                   : sentence
               )
             : colSentences

@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from copy import deepcopy
 from dotenv import load_dotenv
 import os
@@ -16,6 +18,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_origins=[os.environ.get("FRONTEND")],
 )
+
+app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="static")
+
+@app.get("/")
+def home():
+    return FileResponse("frontend/dist/index.html")
+
+@app.get("/icon.png")
+def icon():
+    return FileResponse("frontend/dist/icon.png")
 
 @app.post("/solve")
 def solve(problem: Problem) -> Response:

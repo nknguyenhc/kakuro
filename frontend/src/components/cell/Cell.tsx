@@ -152,14 +152,14 @@ const inputStyle = css`
 
 const rowSumStyle = css`
   position: absolute;
-  top: 10px;
-  left: -80px;
+  top: 30px;
+  left: -60px;
 `;
 
 const colSumStyle = css`
   position: absolute;
   top: -30px;
-  left: 10px;
+  left: 20px;
 `;
 
 export default Cell;

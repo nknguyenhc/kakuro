@@ -173,6 +173,9 @@ class Board:
                 return True
             cell.undo()
 
+            if save_board is not None:
+                save_board(self.to_solution_board())
+
         self._propagate(row, col)
         self.unsolved_count += 1
         self.cell_map[count].add((row, col))
